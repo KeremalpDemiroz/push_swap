@@ -6,7 +6,7 @@ void	pexit(/*add pointers needs to be free*/)
 	ft_putendl_fd("Error!", 2);
 	exit(EXIT_FAILURE);
 }
-int	ft_atoi(const char *nptr)
+int	ft_atoi(const char *nptr)//atoi ve INT_MIN || INT_MAX kontrolü
 {
 	long int		sign;
 	long int		result;
@@ -21,10 +21,8 @@ int	ft_atoi(const char *nptr)
 			sign *= -1;
 		nptr++;
 	}
-	// ft_printf("%s\n", nptr);
 	while ((*nptr) >= '0' && (*nptr) <= '9')
 	{
-		// ft_printf("digit=== %c\n", *nptr);
 		result = (result * 10) + ((*nptr) - 48);
 		nptr++;
 	}
@@ -33,7 +31,7 @@ int	ft_atoi(const char *nptr)
 	return ((int)result * sign);
 }
 
-void	args_is_int(char **av, int  i)
+void	args_is_int(char **av, int  i) //isdigit ve ft_strlen() > 10 kontrolü
 {
 	int	j;
 
@@ -89,12 +87,16 @@ void	args_is_int(char **av, int  i)
 // 	}
 // 	return (result);
 // }
-void	index_sort(t_list args_list, char **av)
+
+void	index_sort(int a[], int ac)
 {
-	
+	int *a;
+	int	*b;
+
+
 }
 
-int	get_argc(char **split)
+int	get_argc(char **split) // ft_strlen for double pointer
 {
 	int	i;
 
@@ -116,6 +118,8 @@ int	main(int ac, char **av)
 	if (ac == 2)
 	{
 		args = ft_split(av[1], ' ');
+		if (!args)
+			return (0);
 		ac = get_argc(args);
 		i--;
 	}
