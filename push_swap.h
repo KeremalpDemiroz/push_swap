@@ -13,5 +13,16 @@ typedef struct s_list
 	
 }t_list;
 
+typedef struct	s_data
+{
+	char	**argv;
+	char	**av;
+	int		argc;
+	int		ac;
+	int		*stack_a;
+	int		*stack_b;
+	int		exit_status;
+
+}t_data;
 
 #endif
