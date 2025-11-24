@@ -380,19 +380,38 @@ void	add_back(t_list **list, t_list *new)
 	temp->next = new;
 }
 
+int	*doppelganger(int *tab, int size, t_data *data, t_list **list)
+{
+	int	i;
+	int	*tmp;
+
+	i = 0;
+	tmp = malloc (sizeof(int) * size);
+	if (!tmp)
+		pexit(data, list);
+	while (i < size)
+	{
+		tmp[i] = tab[i];
+		i++;
+	}
+	return (tmp);
+}
+
 void	sort_int(int *tab, int size, t_data *data, t_list **list)
 {
 	int	i;
 	int	j;
+	int	*copy;
 
 	i = 0;
+	copy = doppelganger(tab, size, data, list);
 	while (i != size -1)
 	{
 		j = i +1;
 		while (j <= size -1)
 		{
-			if (tab[i] > tab[j])
-				ft_swap(&tab[i], &tab[j]);
+			if (copy[i] > copy[j])
+				ft_swap(&copy[i], &copy[j]);
 			j++;
 		}
 		i++;
@@ -400,7 +419,7 @@ void	sort_int(int *tab, int size, t_data *data, t_list **list)
 	i = 0;
 	while (i < size)
 	{
-		add_back(list, new_node(tab[i], i, data, list));
+		add_back(list, new_node(copy[i], i, data, list));
 		i++;
 	}
 }
@@ -468,18 +487,51 @@ void	args_is_uniq(t_data *data, t_list **list)
 	}
 }
 
+void	arg_to_index(t_data *data, t_list **list)
+{
+	t_list	*tmp;
+	int		i;
+
+	tmp = *list;
+	while (tmp)
+	{
+		i = 0;
+		while (i < data->argc)
+		{
+			if (tmp->arg == data->stack_a[i])
+				data->stack_a[i] = tmp->index;
+			i++;
+		}
+		tmp = tmp->next;
+	}
+}
+
 int	main(int ac, char **av)
 {
 	t_data	data;
 	t_list	*list;
 
 	list = NULL;
+	if (ac == 1)
+		return (0);
 	start_t_data(&data, ac, av);
 	char_to_int(&data, &list);
 	sort_int(data.stack_a, data.argc, &data, &list);
 	args_is_uniq(&data, &list);
 	data.exit_status = 1;
 	int i = 0;
+	while (i < data.argc)
+	{
+		ft_printf("%d", data.stack_a[i]);
+		if (i +1 != data.argc)
+			ft_printf(" ");
+		else
+			ft_printf("\n");
+		i++;
+	}
+	ft_printf("=======================================\n");
+	arg_to_index(&data, &list);
+	i = 0;
 	while (i < data.argc)
 	{
 		ft_printf("%d", data.stack_a[i]);

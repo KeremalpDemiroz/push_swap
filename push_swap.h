@@ -22,6 +22,9 @@ typedef struct	s_data
 	int		*stack_a;
 	int		*stack_b;
 	int		exit_status;
+	int		allocated;
+	t_list	*stacka;
+	t_list	*stackb;
 
 }t_data;
 
