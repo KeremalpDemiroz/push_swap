@@ -19,12 +19,12 @@ typedef struct	s_data
 	char	**av;
 	int		argc;
 	int		ac;
-	int		*stack_a;
-	int		*stack_b;
 	int		exit_status;
+	int		max_bit;
+	int		node_count;
 	int		allocated;
-	t_list	*stacka;
-	t_list	*stackb;
+	t_list	*stack_a;
+	t_list	*stack_b;
 
 }t_data;
 

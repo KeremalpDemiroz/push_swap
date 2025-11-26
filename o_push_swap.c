@@ -36,10 +36,10 @@ void	pexit(t_data *data)//data_list parametre alınıp data_list içinde ki alan
 		all_free(data->argv);
 		data->argv = NULL;
 	}
-	if (data->stacka)
-		free_node(&data->stacka);
-	if (data->stackb)
-		free_node(&data->stackb);
+	if (data->stack_a)
+		free_node(&data->stack_a);
+	if (data->stack_b)
+		free_node(&data->stack_b);
 	if (data->exit_status < 0)
 	{
 		ft_putendl_fd("Error!", 2);
@@ -76,8 +76,8 @@ int	ft_atoi_ps(t_data *data, int i)//atoi ve INT_MIN || INT_MAX kontrolü
 
 void	start_t_data(t_data *data, int ac, char **av)
 {
-	data->stacka = NULL;
-	data->stackb = NULL;
+	data->stack_a = NULL;
+	data->stack_b = NULL;
 	data->argv = NULL;
 	data->argc = ac -1;
 	data->av = av;
@@ -159,7 +159,7 @@ t_list	*doppelganger(t_data *data)
 	t_list	*tmp;
 
 	clone = NULL;
-	tmp = data->stacka;
+	tmp = data->stack_a;
 	while (tmp)
 	{
 		add_back(&clone, new_node(tmp->arg, tmp->index, data));
@@ -167,12 +167,28 @@ t_list	*doppelganger(t_data *data)
 	}
 	return (clone);
 }
+
+int	find_msb(t_data *data)
+{
+	int	msb;
+	int	max_index;
+	
+	max_index = (data->argc) - 1;
+	msb = -1;
+	while (max_index > 0)
+	{
+		max_index = max_index >> 1;
+		msb++;
+	}
+	return (msb);
+}
+
 void	arg_to_index(t_data *data, t_list *copy)
 {
 	t_list	*stack_tmp;
 	t_list	*copy_tmp;
 
-	stack_tmp = data->stacka;
+	stack_tmp = data->stack_a;
 	while (stack_tmp)
 	{
 		copy_tmp = copy;
@@ -183,6 +199,12 @@ void	arg_to_index(t_data *data, t_list *copy)
 			copy_tmp = copy_tmp->next;
 		}
 		stack_tmp = stack_tmp->next;
+	}
+	data->max_bit = find_msb(data);
+	if (data->max_bit == -1)
+	{
+		data->exit_status = 1;
+		pexit(data);
 	}
 }
 void	ft_swap(int *a, int *b)
@@ -239,6 +261,7 @@ void	sort_int(t_data *data)
 	arg_is_uniq(data, &copy);
 	arg_to_index(data, copy);
 	free_node(&copy);
+	
 }
 
 void	char_to_int(t_data *data)
@@ -261,10 +284,185 @@ void	char_to_int(t_data *data)
 	while (i < data->argc)
 	{
 		tmp = ft_atoi_ps(data, i);
-		add_back(&data->stacka, new_node(tmp, 0, data));
+		add_back(&data->stack_a, new_node(tmp, 0, data));
 		i++;
 	}
 }
+
+void	swap_a(t_data *data)
+{
+	t_list	*first;
+	t_list	*second;
+
+	if (!data->stack_a || !(data->stack_a->next))
+		return ;
+	first = data->stack_a;
+	second = first->next;
+	first->next = second->next;
+	second->next = first;
+	data->stack_a = second;
+	ft_putendl_fd("sa", 1);
+}
+
+void	swap_b(t_data *data)
+{
+	t_list	*first;
+	t_list	*second;
+
+	if (!data->stack_b || !(data->stack_b->next))
+		return ;
+	first = data->stack_b;
+	second = first->next;
+	first->next = second->next;
+	second->next = first;
+	data->stack_b = second;
+	ft_putendl_fd("sb", 1);
+}
+
+void	rotate_a(t_data *data)
+{
+	t_list	*tmp;
+	t_list	*first;
+
+	if (!data->stack_a || !data->stack_a->next)
+		return ;
+	tmp = data->stack_a;
+	first = tmp;
+	data->stack_a = tmp->next; 
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = first;
+	first->next = NULL;
+	ft_putendl_fd("ra", 1);
+}
+void	rotate_b(t_data *data)
+{
+	t_list	*tmp;
+	t_list	*first;
+
+	if (!data->stack_b || !data->stack_b->next)
+		return ;
+	tmp = data->stack_b;
+	first = tmp;
+	data->stack_b = tmp->next; 
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = first;
+	first->next = NULL;
+	ft_putendl_fd("rb", 1);
+}
+
+void	reverse_rotate_a(t_data *data)
+{
+	t_list	*tmp;
+	t_list	*first;
+	t_list	*last;
+
+	if (!data->stack_a || !data->stack_a->next)
+		return ;
+	tmp = data->stack_a;
+	first = tmp;
+	while (tmp->next->next)
+		tmp = tmp->next; 
+	last = tmp->next;
+	tmp->next = NULL;
+	last->next = first;
+	data->stack_a = last;
+	ft_putendl_fd("rra", 1);
+}
+
+void	reverse_rotate_b(t_data *data)
+{
+	t_list	*tmp;
+	t_list	*first;
+	t_list	*last;
+
+	if (!data->stack_b || !data->stack_b->next)
+		return ;
+	tmp = data->stack_b;
+	first = tmp;
+	while (tmp->next->next)
+		tmp = tmp->next; 
+	last = tmp->next;
+	tmp->next = NULL;
+	last->next = first;
+	data->stack_b = last;
+	ft_putendl_fd("rrb", 1);
+}
+
+void	push_a(t_data *data)
+{
+	t_list	*tmp;
+
+	if (!data->stack_b)
+		return ;
+	tmp = data->stack_b;
+	data->stack_b = tmp->next;
+	tmp->next = data->stack_a;
+	data->stack_a = tmp;
+	ft_putendl_fd("pa", 1);
+}
+
+void	push_b(t_data *data)
+{
+	t_list	*tmp;
+
+	if (!data->stack_a)
+		return ;
+	tmp = data->stack_a;
+	data->stack_a = tmp->next;
+	tmp->next = data->stack_b;
+	data->stack_b = tmp;
+	ft_putendl_fd("pb", 1);
+}
+
+void	radix_sort(t_data *data)
+{
+	t_list	*tmp;
+	int		i;
+
+	i = 0;
+	while (i <= data->max_bit)
+	{
+		data->node_count = data->argc -1;
+		tmp = data->stack_a;
+		while (data->node_count > 0)
+		{
+			if (!((tmp->index >> i) & 1))
+			{
+				tmp = tmp->next;
+				push_b(data);
+			}
+			else
+			{
+				tmp = tmp->next;
+				rotate_a(data);
+			}
+			(data->node_count)--;
+		}
+		while (data->stack_b)
+			push_a(data);
+		i++;
+	}
+}
+
+void	checker(t_data *data)
+{
+	t_list	*tmp_copy;
+	int		tmp_arg;
+
+	tmp_arg = data->stack_a->arg;
+	tmp_copy = data->stack_a->next;
+	while (tmp_copy)
+	{
+		if (tmp_arg > tmp_copy->arg)
+			pexit(data);
+		tmp_arg = tmp_copy->arg;
+		tmp_copy = tmp_copy->next;
+	}
+	printf("   OK \n");
+}
+
 
 int	main(int ac, char **av)
 {
@@ -275,16 +473,16 @@ int	main(int ac, char **av)
 	start_t_data(&data, ac, av);
 	char_to_int(&data);
 	sort_int(&data);
-	t_list *tmp = data.stacka;
-	while (tmp)
-	{
-		printf("arg: %d || index: %d", tmp->arg, tmp->index);
-		if (tmp->next == NULL)
-			printf("\n");
-		else
-			printf(" ");
-		tmp = tmp->next;
-	}
+	radix_sort(&data);
+	// checker(&data);
+	// t_list *tmp = data.stack_a;
+	// while (tmp)
+	// {
+	// 	printf("%d\n", tmp->arg);
+	// 	tmp = tmp->next;
+	// }
 	data.exit_status = 1;
 	pexit(&data);
 }
+
+
