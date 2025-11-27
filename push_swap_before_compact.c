@@ -79,7 +79,6 @@ void	start_t_data(t_data *data, int ac, char **av)
 	data->stack_a = NULL;
 	data->stack_b = NULL;
 	data->argv = NULL;
-	data->before_split = av[1];
 	data->argc = ac -1;
 	data->av = av;
 	data->ac = ac;
@@ -262,6 +261,7 @@ void	sort_int(t_data *data)
 	arg_is_uniq(data, &copy);
 	arg_to_index(data, copy);
 	free_node(&copy);
+	
 }
 
 void	char_to_int(t_data *data)
@@ -270,13 +270,16 @@ void	char_to_int(t_data *data)
 	int	tmp;
 
 	i = 0;
-	data->argv = ft_split(data->before_split, ' ');
-	if (!data->argv)
-		pexit(data);
-	data->argc = get_argc(data);
-	if (data->allocated)
-		free(data->before_split);
-	data->allocated = 1;
+	if (data->ac == 2)
+	{
+		data->argv = ft_split(data->av[1], ' ');
+		if (!data->argv)
+			pexit(data);
+		data->argc = get_argc(data);
+		data->allocated = 1;
+	}
+	else
+		data->argv = &data->av[1];
 	args_is_int(data);
 	while (i < data->argc)
 	{
@@ -413,35 +416,28 @@ void	push_b(t_data *data)
 	ft_putendl_fd("pb", 1);
 }
 
-int	count_node(t_data *data)
+void	radix_sort(t_data *data)//hatalı bu doğrusu o_push_swapte
 {
-	t_list *tmp;
-	int		i;
-
-	i = 0;
-	tmp = data->stack_a;
-	while (tmp)
-	{
-		i++;
-		tmp = tmp->next;
-	}
-	return (i);
-}
-
-void	radix_sort(t_data *data)
-{
+	t_list	*tmp;
 	int		i;
 
 	i = 0;
 	while (i <= data->max_bit)
 	{
-		data->node_count = count_node(data);
+		data->node_count = data->argc -1;
+		tmp = data->stack_a;
 		while (data->node_count > 0)
 		{
-			if (!((data->stack_a->index >> i) & 1))
+			if (!((tmp->index >> i) & 1))
+			{
+				tmp = tmp->next;
 				push_b(data);
+			}
 			else
+			{
+				tmp = tmp->next;
 				rotate_a(data);
+			}
 			(data->node_count)--;
 		}
 		while (data->stack_b)
@@ -450,37 +446,11 @@ void	radix_sort(t_data *data)
 	}
 }
 
-int	is_already_sorted(t_data *data)
-{
-	t_list	*tmp;
-	int		i;
-	int		sorted;
-
-	sorted = 0;
-	i = 0;
-	if (data->argc == 1)
-		return (1);
-	tmp = data->stack_a;
-	while (tmp)
-	{
-		if (tmp->index == i)
-			sorted++;
-		tmp = tmp->next;
-		i++;
-	}
-	if (sorted == data->argc)
-		return (1);
-	else
-		return (0);
-}
-
 void	checker(t_data *data)
 {
 	t_list	*tmp_copy;
 	int		tmp_arg;
 
-	if (data->argc == 1)
-		return ;
 	tmp_arg = data->stack_a->arg;
 	tmp_copy = data->stack_a->next;
 	while (tmp_copy)
@@ -493,35 +463,6 @@ void	checker(t_data *data)
 	printf("   OK \n");
 }
 
-int	compact_args(t_data *data)
-{
-	char	*result;
-	int		i;
-	int		all_size;
-
-	i = 0;
-	all_size = 0;
-	if (data->ac == 2)
-		return (0);
-	while (++i < data->ac)
-		all_size += ft_strlen(data->av[i]);
-	i = 1;
-	result = calloc(sizeof(char), all_size + 1 + data->ac -2);
-	if (!result)
-		return (-1);
-	while (i < data->ac)
-	{
-		ft_strlcat(result, data->av[i], ft_strlen(result) + ft_strlen(data->av[i]) + 1);
-		if (i != data->ac -1)
-			ft_strlcat(result, " ", ft_strlen(result) + 2);
-		i++;
-	}
-	data->before_split = result;
-	data->ac = 2;
-	data->allocated = 1;
-	return (0);
-}
-
 
 int	main(int ac, char **av)
 {
@@ -530,16 +471,8 @@ int	main(int ac, char **av)
 	if (ac == 1)
 		return (0);
 	start_t_data(&data, ac, av);
-	if(compact_args(&data) < 0)
-		pexit(&data);
 	char_to_int(&data);
 	sort_int(&data);
-	if (is_already_sorted(&data))
-	{
-		data.exit_status = 1;
-		pexit(&data);
-		return (0);
-	}
 	radix_sort(&data);
 	// checker(&data);
 	// t_list *tmp = data.stack_a;
@@ -552,11 +485,3 @@ int	main(int ac, char **av)
 	pexit(&data);
 }
 
-/*
-
-to do :
-		3 ve 5 elemanlıda ki max 2 ve 12 hamle için optimize et
-		Makefile yaz
-		norm düzelt
-		tester ile test et
-*/

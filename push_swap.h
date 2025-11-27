@@ -17,6 +17,7 @@ typedef struct	s_data
 {
 	char	**argv;
 	char	**av;
+	char	*before_split;
 	int		argc;
 	int		ac;
 	int		exit_status;
