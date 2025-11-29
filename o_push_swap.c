@@ -29,7 +29,8 @@ void	all_free(char **split)
 	free(split);
 }
 
-void	pexit(t_data *data)//data_list parametre alınıp data_list içinde ki alanlar freelenebilir çıkış öncesi
+//data_list parametre alınıp data_list içinde ki alanlar freelenebilir çıkış öncesi
+void	pexit(t_data *data, int exit_status)
 {
 	if (data->argv && data->allocated)
 	{
@@ -40,14 +41,15 @@ void	pexit(t_data *data)//data_list parametre alınıp data_list içinde ki alan
 		free_node(&data->stack_a);
 	if (data->stack_b)
 		free_node(&data->stack_b);
-	if (data->exit_status < 0)
+	if (exit_status < 0)
 	{
-		ft_putendl_fd("Error!", 2);
+		ft_putendl_fd("Error", 2);
 		exit(EXIT_FAILURE);
 	}
 }
 
-int	ft_atoi_ps(t_data *data, int i)//atoi ve INT_MIN || INT_MAX kontrolü
+//atoi ve INT_MIN || INT_MAX kontrolü
+int	ft_atoi_ps(t_data *data, int i)
 {
 	long int	sign;
 	long int	result;
@@ -70,7 +72,7 @@ int	ft_atoi_ps(t_data *data, int i)//atoi ve INT_MIN || INT_MAX kontrolü
 		str++;
 	}
 	if (result * sign > INT_MAX || result * sign < INT_MIN)
-		pexit(data);
+		pexit(data, -1);
 	return ((int)result * sign);
 }
 
@@ -86,19 +88,22 @@ void	start_t_data(t_data *data, int ac, char **av)
 	data->exit_status = -1;
 	data->allocated = 0; 
 }
-int	get_argc(t_data *data) // ft_strlen for double pointer
+
+// ft_strlen for double pointer
+int	get_argc(t_data *data)
 {
 	int	i;
 
 	i = 0;
 	if (!data->argv)
-		pexit(data);
+		pexit(data, -1);
 	while (data->argv[i])
 		i++;
 	return (i);
 }
 
-void	args_is_int(t_data *data) //isdigit ve ft_strlen() > 10 kontrolü
+//isdigit ve ft_strlen() > 10 kontrolü
+void	args_is_int(t_data *data)
 {
 	int	j;
 	int	i;
@@ -112,11 +117,11 @@ void	args_is_int(t_data *data) //isdigit ve ft_strlen() > 10 kontrolü
 		while (data->argv[i][j] == '0')
 			j++;
 		if (ft_strlen(&data->argv[i][j]) > 10)
-			pexit(data);
+			pexit(data, -1);
 		while (data->argv[i][j])
 		{
 			if (!ft_isdigit(data->argv[i][j]))
-				pexit(data);
+				pexit(data, -1);
 			j++;
 		}
 		i++;
@@ -145,9 +150,7 @@ t_list	*new_node(int arg, int index, t_data *data)
 
 	node = malloc(sizeof(t_list));
 	if (!node)
-	{
-		pexit(data);
-	}
+		pexit(data, -1);
 	node->arg = arg;
 	node->index = index;
 	node->next = NULL;
@@ -203,10 +206,8 @@ void	arg_to_index(t_data *data, t_list *copy)
 	}
 	data->max_bit = find_msb(data);
 	if (data->max_bit == -1)
-	{
-		data->exit_status = 1;
-		pexit(data);
-	}
+		pexit(data, 1);
+
 }
 void	ft_swap(int *a, int *b)
 {
@@ -229,7 +230,7 @@ void	arg_is_uniq(t_data *data, t_list **copy)
 		if (tmp_arg == tmp_copy->arg)
 		{
 			free_node(copy);
-			pexit(data);
+			pexit(data, -1);
 		}
 		tmp_arg = tmp_copy->arg;
 		tmp_copy = tmp_copy->next;
@@ -270,9 +271,11 @@ void	char_to_int(t_data *data)
 	int	tmp;
 
 	i = 0;
+	if (!data->before_split || data->before_split[0] == '\0')
+		pexit(data, -1);
 	data->argv = ft_split(data->before_split, ' ');
 	if (!data->argv)
-		pexit(data);
+		pexit(data, -1);
 	data->argc = get_argc(data);
 	if (data->allocated)
 		free(data->before_split);
@@ -453,22 +456,21 @@ void	radix_sort(t_data *data)
 int	is_already_sorted(t_data *data)
 {
 	t_list	*tmp;
-	int		i;
 	int		sorted;
+	int		node_count;
 
-	sorted = 0;
-	i = 0;
-	if (data->argc == 1)
+	sorted = 1;
+	node_count = count_node(data);
+	if (node_count == 1)
 		return (1);
 	tmp = data->stack_a;
 	while (tmp)
 	{
-		if (tmp->index == i)
+		if (tmp->next && tmp->index == tmp->next->index -1)
 			sorted++;
 		tmp = tmp->next;
-		i++;
 	}
-	if (sorted == data->argc)
+	if (sorted == node_count)
 		return (1);
 	else
 		return (0);
@@ -486,7 +488,7 @@ void	checker(t_data *data)
 	while (tmp_copy)
 	{
 		if (tmp_arg > tmp_copy->arg)
-			pexit(data);
+			pexit(data, -1);
 		tmp_arg = tmp_copy->arg;
 		tmp_copy = tmp_copy->next;
 	}
@@ -512,7 +514,7 @@ int	compact_args(t_data *data)
 	while (i < data->ac)
 	{
 		ft_strlcat(result, data->av[i], ft_strlen(result) + ft_strlen(data->av[i]) + 1);
-		if (i != data->ac -1)
+		if (data->av[i] && data->av[i][0] != '\0' && i != data->ac -1)
 			ft_strlcat(result, " ", ft_strlen(result) + 2);
 		i++;
 	}
@@ -522,6 +524,88 @@ int	compact_args(t_data *data)
 	return (0);
 }
 
+int	get_position(t_data *data, int  target_index)
+{
+	t_list *tmp;
+	int		i;
+	
+	i = 0;
+	tmp = data->stack_a;
+	while (tmp)
+	{
+		if (tmp->index == target_index)
+			return (i);
+		tmp = tmp->next;
+		i++;
+	}
+	return (-1);
+}
+
+void bring_to_top(t_data *data, int target_index)
+{
+	int	position;
+	int	node_count;
+
+	position = get_position(data, target_index);
+	node_count = count_node(data);
+	if (position <= node_count / 2)
+	{
+		while (get_position(data, target_index) != 0)
+		{
+			if (data->stack_a->index == data->stack_a->next->index +1)
+				swap_a(data);
+			else
+				rotate_a(data);
+		}
+	}
+	else
+	{
+		while (get_position(data, target_index) != 0)
+			reverse_rotate_a(data);
+	}
+}
+
+void	under_nine(t_data *data)
+{
+	int	min_index;
+	int	position;
+	int	max_index;
+
+	max_index = data->argc -1;
+	min_index = 0;
+	if (max_index > 3)
+	{
+		while (min_index <= data->argc / 2)
+		{
+			bring_to_top(data, min_index);
+			if (is_already_sorted(data))
+			break ;
+			else
+			push_b(data);
+			min_index++;
+		}
+	}
+	while (is_already_sorted(data) == 0 && min_index <= max_index)
+	{
+		bring_to_top(data, max_index);
+		max_index--;
+	}
+	while (data->stack_b)
+		push_a(data);
+}
+
+void	null_check(t_data *data)
+{
+	int  i;
+
+	i = 0;
+	while (data->av[i])
+	{
+		if (!data->av[i][0])
+			pexit(data, -1);
+		i++;
+	}
+}
 
 int	main(int ac, char **av)
 {
@@ -530,33 +614,80 @@ int	main(int ac, char **av)
 	if (ac == 1)
 		return (0);
 	start_t_data(&data, ac, av);
+	null_check(&data);
 	if(compact_args(&data) < 0)
-		pexit(&data);
+		pexit(&data, -1);
 	char_to_int(&data);
 	sort_int(&data);
 	if (is_already_sorted(&data))
 	{
-		data.exit_status = 1;
-		pexit(&data);
+		pexit(&data, 1);
 		return (0);
 	}
-	radix_sort(&data);
-	// checker(&data);
-	// t_list *tmp = data.stack_a;
-	// while (tmp)
-	// {
-	// 	printf("%d\n", tmp->arg);
-	// 	tmp = tmp->next;
-	// }
-	data.exit_status = 1;
-	pexit(&data);
+	if (data.argc < 9)
+		under_nine(&data);
+	else
+		radix_sort(&data);
+	pexit(&data, 1);
 }
 
 /*
 
 to do :
-		3 ve 5 elemanlıda ki max 2 ve 12 hamle için optimize et
+		3 ve 5 elemanlıda ki max 2 ve 12 hamle için optimize et// 5 ve 6 için yazıldı 3 optimize edilmeli
 		Makefile yaz
 		norm düzelt
 		tester ile test et
+*/
+
+/*
+
+
+				stack_a										stack_b
+	8843	9581	7556	4562	17159
+	2		3		1		0		4
+
+
+	4	2	3	1	0
+	0	4	2	3	1
+
+	4	2	3	1												0
+	1	4	2	3												0
+	4	2	3						1	0
+	2	3	4					1	0
+	3	4					
+
+
+	12 hamle = 0 2 1 4 3 
+	
+	16 hamle = 1 2 3 0 4
+	17 hamle = 1 3 2 0 4
+	12 hamle = 1 0 3 2 4
+
+	14 hamle = 2 3 1 0 4
+	14 hamle = 3 2 0 4 1
+	13 hamle = 3 1 0 4 2
+	15 hamle = 4 0 2 3 1
+	12 hamle = 4 0 2 1 3
+
+
+
+	0 3 2 4 1
+
+	3 2 4 1       0
+	2 4 1 3       0
+
+
+	4 0 3 2 1
+	
+	4 0 3 1 2
+
+
+	0 3 1 2 4
+
+	3 1 2 4 = 0
+	1 2 4 3 = 0
+	2 4 3 = 1 0
+	4 3 = 2 1
+
 */
