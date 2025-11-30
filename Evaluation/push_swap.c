@@ -6,7 +6,7 @@
 /*   By: kedemiro <kedemiro@student.42istanbul.com. +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/30 17:26:47 by kedemiro          #+#    #+#             */
-/*   Updated: 2025/11/30 18:11:20 by kedemiro         ###   ########.fr       */
+/*   Updated: 2025/11/30 19:23:09 by kedemiro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ int	main(int ac, char **av)
 		pexit(&data, 1);
 		return (0);
 	}
-	if (data.argc < 9)
+	if (data.argc > 1 && data.argc < 9)
 		under_nine(&data);
 	else
 		radix_sort(&data);

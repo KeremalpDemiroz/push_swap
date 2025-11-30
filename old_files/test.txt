@@ -1,0 +1,2 @@
+======================================
+12'den büyük hamleye sahip permütasyon sayısı: 0

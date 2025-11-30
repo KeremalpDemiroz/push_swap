@@ -6,7 +6,7 @@
 /*   By: kedemiro <kedemiro@student.42istanbul.com. +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/30 17:35:53 by kedemiro          #+#    #+#             */
-/*   Updated: 2025/11/30 17:43:35 by kedemiro         ###   ########.fr       */
+/*   Updated: 2025/11/30 19:01:24 by kedemiro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,22 +26,24 @@ int	get_argc(t_data *data)
 
 void	args_is_int(t_data *data)
 {
-	int	j;
-	int	i;
+	int		j;
+	int		i;
+	char	**argv;
 
 	i = 0;
-	while (data->argv[i])
+	argv = data->argv;
+	while (argv[i])
 	{
 		j = 0;
-		if (data->argv[i][j] == '-' || data->argv[i][j] == '+')
+		if ((argv[i][j] == '-' || argv[i][j] == '+') && argv[i][j + 1] != '\0')
 			j++;
-		while (data->argv[i][j] == '0')
+		while (argv[i][j] == '0')
 			j++;
-		if (ft_strlen(&data->argv[i][j]) > 10)
+		if (ft_strlen(&argv[i][j]) > 10)
 			pexit(data, -1);
-		while (data->argv[i][j])
+		while (argv[i][j])
 		{
-			if (!ft_isdigit(data->argv[i][j]))
+			if (!ft_isdigit(argv[i][j]))
 				pexit(data, -1);
 			j++;
 		}

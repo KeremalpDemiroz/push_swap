@@ -12,7 +12,7 @@ SRCS=	push_swap.c\
 		under_nine.c\
 		utils.c\
 
-LIBFT= ../sources
+LIBFT= ./sources
 LIBFT_A= $(LIBFT)/libft.a
 
 OBJS= $(SRCS:.c=.o)
