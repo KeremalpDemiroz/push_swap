@@ -32,7 +32,7 @@ void	null_check(t_data *data)
 	i = 0;
 	while (data->av[i])
 	{
-		if (!data->av[i][0])
+		if (!data->av[i][0] || (data->av[i][0] == ' ' && !data->av[i][1]))
 			pexit(data, -1);
 		i++;
 	}
